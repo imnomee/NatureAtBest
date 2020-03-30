@@ -8,7 +8,11 @@ const userRouter = require('./routes/userRoutes');
 
 //Middlwares
 const app = express(); //create app from express
-app.use(morgan('dev'));
+
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
+
 app.use(express.json());
 app.use(express.static(`${__dirname}/public`));
 
