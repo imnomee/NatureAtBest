@@ -1,23 +1,22 @@
-const fs = require('fs');
 const express = require('express');
 const {
-  checkTourId,
+  topTours,
+  getMonthlyPlan,
+  getTourStats,
   getAllTours,
-  checkTourBody,
   postNewTour,
   getSingleTour,
   patchSingleTour,
-  deleteSinglTour
+  deleteSinglTour,
 } = require('../controllers/tourControllers');
 
 const router = express.Router();
 
-router.param('id', checkTourId);
+router.route('/plan/:year').get(getMonthlyPlan);
+router.route('/best-deals').get(topTours, getAllTours);
+router.route('/tour-stats').get(getTourStats);
 
-router
-  .route('/')
-  .get(getAllTours)
-  .post(checkTourBody, postNewTour);
+router.route('/').get(getAllTours).post(postNewTour);
 
 router
   .route('/:id')

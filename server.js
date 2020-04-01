@@ -16,9 +16,11 @@ mongoose
     useNewUrlParser: true,
     useCreateIndex: true,
     useFindAndModify: false,
+    useUnifiedTopology: true,
   })
   .then((con) => console.log('Connected to the databases'))
   .catch((err) => console.error(err));
+
 /*
 environment variables available at
 >> console.log(process.env);
