@@ -1,19 +1,15 @@
-const fs = require('fs');
 const express = require('express');
 const {
   getAllUsers,
   postNewUser,
   getSingleUser,
   patchSingleUser,
-  deleteSingleUser
+  deleteSingleUser,
 } = require('../controllers/userControllers');
 
 const router = express.Router();
 
-router
-  .route('/')
-  .get(getAllUsers)
-  .post(postNewUser);
+router.route('/').get(getAllUsers).post(postNewUser);
 router
   .route('/:id')
   .get(getSingleUser)

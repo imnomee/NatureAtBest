@@ -8,6 +8,8 @@ const tourSchema = new mongoose.Schema(
       required: [true, 'A tour must have a name'],
       unique: true,
       trim: true,
+      maxlength: [40, 'A tour name must have less or equal 40 characters'],
+      minlength: [10, 'A tour name must have more or equal 10 characters'],
     },
 
     secretTour: {
@@ -26,10 +28,16 @@ const tourSchema = new mongoose.Schema(
     difficulty: {
       type: String,
       required: [true, 'Difficulty??'],
+      enum: {
+        values: ['easy', 'medium', 'difficult'],
+        message: 'Difficulty is either: easy, medium or difficult',
+      },
     },
     ratingsAverage: {
       type: Number,
       default: 4.5,
+      min: [1, 'Rating must be 1.0'],
+      max: [5, 'Rating must be below 5.0'],
     },
     ratingsQuantity: {
       type: Number,
@@ -39,7 +47,16 @@ const tourSchema = new mongoose.Schema(
       type: Number,
       required: [true, 'A tour must have a price'],
     },
-    priceDiscount: Number,
+    priceDiscount: {
+      type: Number,
+      validate: {
+        validator: function (value) {
+          //this only points to current document on NEW document creation
+          return value < this.price;
+        },
+        message: 'Discount price: {VALUE} should be below regular price',
+      },
+    },
     summary: {
       type: String,
       trim: true,
@@ -110,7 +127,7 @@ tourSchema.pre(/^find/, function (next) {
 
 tourSchema.post(/^find/, function (doc, next) {
   // console.log(doc);
-  console.log(`Query took ${Date.now() - this.start} ms`);
+  // console.log(`Query took ${Date.now() - this.start} ms`);
 
   next();
 });

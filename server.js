@@ -3,6 +3,11 @@ const dotenv = require('dotenv');
 
 dotenv.config({ path: './config.env' });
 
+process.on('uncaughtException', (err) => {
+  console.log(err.name, err.message);
+  process.exit(1);
+});
+
 const app = require('./app');
 
 const DB = process.env.DATABASE.replace(
@@ -27,6 +32,14 @@ environment variables available at
 */
 //Listener
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log('Listening on:', port);
+});
+
+process.on('unhandledRejection', (err) => {
+  console.log(err.message, err.name);
+  console.log('Unhandled Rejection, Shutting DOwn....');
+  server.close(() => {
+    process.exit(1);
+  });
 });
