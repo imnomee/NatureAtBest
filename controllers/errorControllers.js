@@ -41,6 +41,11 @@ const handlValidation = (err) => {
   return new AppErrors(400, message);
 };
 
+const handleJWTError = () => {
+  const message = 'Invalid Token. Please login again';
+  return new AppErrors(401, message);
+};
+
 module.exports.globalErrorHandler = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
@@ -62,6 +67,9 @@ module.exports.globalErrorHandler = (err, req, res, next) => {
 
     if (error.name === 'ValidationError') {
       error = handlValidation(error);
+    }
+    if (error.name === 'JsonWebTokenError') {
+      error = handleJWTError(error);
     }
     prodError(error, res);
   }

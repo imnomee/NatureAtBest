@@ -1,8 +1,9 @@
+/* eslint-disable node/no-unsupported-features/es-syntax */
 class APIFeatures {
   //queryString is req.query
   //query is query we pass to database
-  constructor(query, queryString) {
-    this.query = query;
+  constructor(document, queryString) {
+    this.query = document;
     this.queryString = queryString;
   }
 
@@ -32,9 +33,13 @@ class APIFeatures {
   limitFields() {
     if (this.queryString.fields) {
       const fields = this.queryString.fields.split(',').join(' ');
-      this.query = this.query.select(fields);
+      this.query = this.query.select({
+        path: fields,
+        select: '-__v -durationWeeks',
+      });
+      // this.query.durationWeeks = undefined;
     } else {
-      this.query = this.query.select('-__v');
+      this.query = this.query.select('-__v -durationWeeks');
     }
     return this;
   }

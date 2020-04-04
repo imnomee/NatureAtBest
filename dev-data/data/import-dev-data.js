@@ -1,7 +1,8 @@
 const fs = require('fs');
-const Tour = require('../../models/tourModel');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const Tour = require('../../models/tourModel');
+const User = require('../../models/userModel');
 
 dotenv.config({ path: `${__dirname}/../../config.env` });
 
@@ -18,19 +19,18 @@ mongoose
     useFindAndModify: false,
     useUnifiedTopology: true,
   })
-  .then((con) => console.log('Connected to the databases'))
+  .then(() => console.log('Connected to the databases'))
   .catch((err) => console.error(err));
 
 //Read file
-const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/tours-simple.json`, 'utf-8')
-);
+const tours = JSON.parse(fs.readFileSync(`${__dirname}/tours.json`, 'utf-8'));
+const users = JSON.parse(fs.readFileSync(`${__dirname}/users.json`, 'utf-8'));
 
 //Import data into database
 
 const importData = async () => {
   try {
-    await Tour.create(tours);
+    await User.create(users);
     console.log('Data Loaded Successfully');
   } catch (err) {
     console.error(err.message);
@@ -40,7 +40,7 @@ const importData = async () => {
 //Delete all data
 const deleteData = async () => {
   try {
-    await Tour.deleteMany();
+    await User.deleteMany();
     console.log('DB empty now');
   } catch (err) {
     console.error(err.message);
@@ -52,4 +52,3 @@ if (process.argv[2] === '--import') {
 } else if (process.argv[2] === '--delete') {
   deleteData();
 }
-console.log(process.argv);
