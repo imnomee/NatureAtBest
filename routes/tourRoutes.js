@@ -13,6 +13,7 @@ const {
 
 const router = express.Router();
 
+// router.use('/:tourId/reviews', reviewRouter);
 router.route('/plan/:year').get(getMonthlyPlan);
 router.route('/best-deals').get(topTours, getAllTours);
 router.route('/tour-stats').get(getTourStats);

@@ -110,7 +110,11 @@ const tourSchema = new mongoose.Schema(
     ],
   },
 
-  { timestamps: true, toJSON: { virtuals: true } } //It will show default timestamps
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  } //It will show default timestamps
 );
 
 //Virtual property which is not actually a part of schema
@@ -120,6 +124,12 @@ tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
 });
 
+//Virutal review populate
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour',
+  localField: '_id',
+});
 //Document middlware: runs before save and create command
 tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true });

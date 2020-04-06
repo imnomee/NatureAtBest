@@ -1,6 +1,7 @@
 const User = require('../models/userModel');
 const AppErrors = require('../utils/AppErrors');
 const { catchAsync } = require('../utils/CatchAsync');
+const { deleteOne, updateOne } = require('./handlerFactory');
 
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
@@ -9,7 +10,6 @@ const filterObj = (obj, ...allowedFields) => {
       newObj[el] = obj[el];
     }
   });
-  console.log(newObj);
   return newObj;
 };
 
@@ -36,19 +36,9 @@ exports.getSingleUser = (req, res) => {
   });
 };
 
-exports.patchSingleUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'patchSingleUser: This route is not yet defined',
-  });
-};
+exports.patchSingleUser = updateOne(User);
 
-exports.deleteSingleUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'deleteSingleUser: This route is not yet defined',
-  });
-};
+exports.deleteSingleUser = deleteOne(User);
 
 exports.updateMe = catchAsync(async (req, res, next) => {
   //Create error if user tries to update password data
