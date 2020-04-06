@@ -1,11 +1,10 @@
 /* eslint-disable node/no-unsupported-features/es-syntax */
-const APIFeatures = require('../utils/ApiFeatures');
 const Tour = require('../models/tourModel');
 const { catchAsync } = require('../utils/CatchAsync');
-const AppErrors = require('../utils/AppErrors');
 const {
   createOne,
   readOne,
+  readAll,
   updateOne,
   deleteOne,
 } = require('./handlerFactory');
@@ -52,68 +51,31 @@ exports.getTourStats = catchAsync(async (req, res, next) => {
   });
 });
 //Find all the tours - Read
-exports.getAllTours = catchAsync(async (req, res, next) => {
-  const features = new APIFeatures(Tour.find(), req.query)
-    .filter()
-    .sort()
-    .limitFields()
-    .paginate();
+// exports.getAllTours = catchAsync(async (req, res, next) => {
+//   const features = new APIFeatures(Tour.find(), req.query)
+//     .filter()
+//     .sort()
+//     .limitFields()
+//     .paginate();
 
-  const tours = await features.query;
-  res.status(200).json({
-    status: 'success',
-    result: tours.length,
-    data: { tours },
-  });
-});
-
-//Create New Tour - Create
-// exports.postNewTour = catchAsync(async (req, res, next) => {
-//   const newTour = await Tour.create(req.body);
+//   const tours = await features.query;
 //   res.status(200).json({
 //     status: 'success',
-//     data: { newTour },
+//     result: tours.length,
+//     data: { tours },
 //   });
 // });
-
+exports.getAllTours = readAll(Tour);
+//Create New Tour - Create
 exports.postNewTour = createOne(Tour, { path: 'reviews' });
 
 //Find single tour - Read
 exports.getSingleTour = readOne(Tour);
 
 //Update single tour - Update
-// exports.patchSingleTour = catchAsync(async (req, res, next) => {
-//   const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-//     new: true,
-//     runValidators: true,
-//   });
-
-//   if (!tour) {
-//     return next(new AppErrors(404, 'no tours found with that ID'));
-//   }
-
-//   res.status(200).json({
-//     status: 'success',
-//     data: {
-//       tour,
-//     },
-//   });
-// });
-
 exports.patchSingleTour = updateOne(Tour);
 
 //Deleting a document - Delete
-// exports.deleteSinglTour = catchAsync(async (req, res, next) => {
-//   const tour = await Tour.findByIdAndDelete(req.params.id);
-//   if (!tour) {
-//     return next(new AppErrors(404, 'no tours found with that ID'));
-//   }
-//   res.status(204).json({
-//     status: 'success',
-//     data: null,
-//   });
-// });
-
 exports.deleteSinglTour = deleteOne(Tour);
 
 //Getting monthly Planner - tours/best-deals
