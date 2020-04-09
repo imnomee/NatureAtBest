@@ -16,6 +16,12 @@ exports.getSingleUser = readOne(User);
 exports.getAllUsers = readAll(User);
 exports.patchSingleUser = updateOne(User);
 exports.deleteSingleUser = deleteOne(User);
+
+exports.readMe = (req, res, next) => {
+  req.params.id = req.user.id;
+  next();
+};
+
 exports.updateMe = catchAsync(async (req, res, next) => {
   //Create error if user tries to update password data
   if (req.body.password || req.body.passwordConfirm) {

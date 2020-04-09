@@ -1,4 +1,6 @@
+const path = require('path');
 const express = require('express'); //require express
+
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
@@ -11,9 +13,17 @@ const AppErrors = require('./utils/AppErrors');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
+const viewRouter = require('./routes/viewRoutes');
 
 //Middlwares
 const app = express(); //create app from express
+
+//pug settings
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
+
+//serving static files
+app.use(express.static(path.join(__dirname, 'public')));
 
 const { globalErrorHandler } = require('./controllers/errorControllers');
 
@@ -56,9 +66,22 @@ app.use(
   })
 );
 
-//serving static files
-app.use(express.static(`${__dirname}/public`));
+// app.get('/', (req, res) => {
+//   res.status(200).render('base');
+// });
 
+// app.get('/overview', (req, res) => {
+//   res.status(200).render('overview', {
+//     title: 'All Tours',
+//   });
+// });
+
+// app.get('/tour', (req, res) => {
+//   res.status(200).render('tour', {
+//     title: 'The Forest Hiker Tour',
+//   });
+// });
+app.use('/', viewRouter);
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);

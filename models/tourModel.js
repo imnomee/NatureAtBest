@@ -39,6 +39,7 @@ const tourSchema = new mongoose.Schema(
       default: 4.5,
       min: [1, 'Rating must be 1.0'],
       max: [5, 'Rating must be below 5.0'],
+      set: (val) => Math.round(val * 10) / 10, //rounding the average in case its like 4.66666666
     },
     ratingsQuantity: {
       type: Number,
@@ -117,6 +118,15 @@ const tourSchema = new mongoose.Schema(
   } //It will show default timestamps
 );
 
+//creating index on price
+// tourSchema.index({ price: 1 });
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
+/* 
+https://stackoverflow.com/questions/16388836/does-applying-a-2dsphere-index-on-a-mongoose-schema-force-the-location-field-to
+*/
+tourSchema.index({ 'startLocation.coordinates': '2dsphere' }); //it won't work with just startLocation
+
 //Virtual property which is not actually a part of schema
 tourSchema.virtual('durationWeeks').get(function () {
   //getting duration from the tourSchema. Original duration is in days.
@@ -130,6 +140,7 @@ tourSchema.virtual('reviews', {
   foreignField: 'tour',
   localField: '_id',
 });
+
 //Document middlware: runs before save and create command
 tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true });

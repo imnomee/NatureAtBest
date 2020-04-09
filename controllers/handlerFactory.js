@@ -13,7 +13,8 @@ exports.createOne = (Model) =>
 
 exports.readOne = (Model, options) =>
   catchAsync(async (req, res, next) => {
-    let query = Model.findById(req.params.id);
+    //find by ID and do not select __v field
+    let query = Model.findById(req.params.id).select('-__v');
     if (options) {
       query = query.populate(options);
     }
@@ -39,8 +40,9 @@ exports.readAll = (Model) =>
       .sort()
       .limitFields()
       .paginate();
-
+    // const doc = await features.query.explain();
     const doc = await features.query;
+
     res.status(200).json({
       status: 'success',
       result: doc.length,

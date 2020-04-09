@@ -1,5 +1,6 @@
 /* eslint-disable node/no-unsupported-features/es-syntax */
 const Tour = require('../models/tourModel');
+const AppErrors = require('../utils/AppErrors');
 const { catchAsync } = require('../utils/CatchAsync');
 const {
   createOne,
@@ -51,32 +52,21 @@ exports.getTourStats = catchAsync(async (req, res, next) => {
   });
 });
 //Find all the tours - Read
-// exports.getAllTours = catchAsync(async (req, res, next) => {
-//   const features = new APIFeatures(Tour.find(), req.query)
-//     .filter()
-//     .sort()
-//     .limitFields()
-//     .paginate();
-
-//   const tours = await features.query;
-//   res.status(200).json({
-//     status: 'success',
-//     result: tours.length,
-//     data: { tours },
-//   });
-// });
 exports.getAllTours = readAll(Tour);
 //Create New Tour - Create
-exports.postNewTour = createOne(Tour, { path: 'reviews' });
+exports.postNewTour = createOne(Tour);
 
 //Find single tour - Read
-exports.getSingleTour = readOne(Tour);
+exports.getSingleTour = readOne(Tour, {
+  path: 'reviews',
+  select: '-__v',
+});
 
 //Update single tour - Update
 exports.patchSingleTour = updateOne(Tour);
 
 //Deleting a document - Delete
-exports.deleteSinglTour = deleteOne(Tour);
+exports.deleteSingleTour = deleteOne(Tour);
 
 //Getting monthly Planner - tours/best-deals
 exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
@@ -119,6 +109,73 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
     status: 'success',
     data: {
       plan,
+    },
+  });
+});
+
+//Get tours within a geo area
+// /tours-distance/233/center/-40,45/unit/mi;
+exports.getToursWithin = catchAsync(async (req, res, next) => {
+  const { distance, latlng, unit } = req.params;
+
+  const [lat, lng] = latlng.split(',');
+  const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
+
+  if (!lat || !lng) {
+    next(new AppErrors(400, 'Please provide coords in the format lat,lng'));
+  }
+  console.log(distance, lat, lng, unit);
+  const tours = await Tour.find({
+    startLocation: {
+      $geoWithin: {
+        $centerSphere: [[lng, lat], radius],
+      },
+    },
+  });
+
+  res.status(200).json({
+    status: 'success',
+    results: tours.length,
+    data: {
+      data: tours,
+    },
+  });
+});
+
+exports.getDistances = catchAsync(async (req, res, next) => {
+  const { latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(',');
+  const multiplier = unit === 'mi' ? 0.000621371 : 0.001;
+
+  if (!lat || !lng) {
+    next(new AppErrors(400, 'Please provide coords in the format lat,lng'));
+  }
+  const distances = await Tour.aggregate([
+    {
+      $geoNear: {
+        near: {
+          type: 'Point',
+          coordinates: [lng * 1, lat * 1],
+        },
+        // spherical: true,
+        distanceField: 'distance',
+        distanceMultiplier: multiplier,
+      },
+    },
+    {
+      $project: {
+        distance: 1,
+        name: 1,
+      },
+    },
+  ]);
+
+  console.log(distances);
+  res.status(200).json({
+    status: 'success',
+    results: distances.length,
+    data: {
+      distances,
     },
   });
 });
