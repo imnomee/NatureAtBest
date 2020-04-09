@@ -74,6 +74,29 @@ exports.login = catchAsync(async (req, res, next) => {
   
 });
 
+//User logging check - only for rendered pages, no errors
+exports.isLoggedIn = catchAsync(async (req, res, next) => {
+  // Get the token and check if its there
+  if (req.cookies.jwt) {
+    const decoded = await jwt.verify(req.cookies.jwt, process.env.JWT_SECRET);
+
+    //check if user still exists
+    const currentUser = await User.findById(decoded.id);
+    if (!currentUser) {
+      return next();
+    }
+
+    if (currentUser.checkPasswordChange(decoded.iat)) {
+      return next();
+    }
+
+    res.locals.user = currentUser;
+    return next();
+  }
+  next();
+});
+
+
 //Protect routes
 exports.protect = catchAsync(async (req, res, next) => {
   // Get the token and check if its there
