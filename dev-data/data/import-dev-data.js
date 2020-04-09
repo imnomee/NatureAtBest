@@ -13,8 +13,8 @@ const DB = process.env.DATABASE.replace(
 );
 
 mongoose
-  // .connect(process.env.DATABASE_LOCAL //local database connections
-  .connect(DB, {
+  .connect(process.env.DATABASE_LOCAL, {//local database connections
+  // .connect(DB, {
     useNewUrlParser: true,
     useCreateIndex: true,
     useFindAndModify: false,

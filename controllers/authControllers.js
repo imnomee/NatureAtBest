@@ -5,6 +5,7 @@ const AppErrors = require('../utils/AppErrors');
 const { catchAsync } = require('../utils/CatchAsync');
 const sendEmail = require('../utils/Email');
 
+
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
@@ -56,8 +57,7 @@ exports.signUp = catchAsync(async (req, res, next) => {
 });
 
 exports.login = catchAsync(async (req, res, next) => {
-  const { email } = req.body;
-  const { password } = req.body;
+  const { email,password } = req.body;
   //if emailand password correct
 
   if (!email || !password) {
@@ -71,12 +71,7 @@ exports.login = catchAsync(async (req, res, next) => {
   }
   //send token
   createSendToken(user, 200, res);
-  //   const token = signToken(user._id);
-
-  //   res.status(200).json({
-  //     status: 'success',
-  //     token: token,
-  //   });
+  
 });
 
 //Protect routes
@@ -86,6 +81,8 @@ exports.protect = catchAsync(async (req, res, next) => {
   let token;
   if (authorization && authorization.startsWith('Bearer')) {
     token = authorization.split(' ')[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt
   }
   // console.log('token', token);
 

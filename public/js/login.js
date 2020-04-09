@@ -14,12 +14,18 @@
 // };
 
 const login = async (email, password) => {
-  await axios
-    .post('http://localhost:3000/api/v1/users/login', {
-      email,
-      password,
-    })
-    .then((data) => console.log(data));
+  try {
+    const res = await axios({
+      method: 'POST',
+      url: 'http://localhost:3000/api/v1/users/login',
+      data: {
+        email,
+        password,
+      }
+    });
+    console.log(res);
+  }catch(err){console.log(err.response.data.message)}
+    
 };
 
 const form = document.querySelector('.form');

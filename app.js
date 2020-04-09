@@ -2,6 +2,7 @@ const path = require('path');
 const express = require('express'); //require express
 
 const morgan = require('morgan');
+const cookieParser = require('cookie-parser')
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const sanitizer = require('express-mongo-sanitize');
@@ -17,6 +18,7 @@ const viewRouter = require('./routes/viewRoutes');
 
 //Middlwares
 const app = express(); //create app from express
+
 
 //pug settings
 app.set('view engine', 'pug');
@@ -45,6 +47,7 @@ app.use('/api', limiter);
 
 //body parser, reading data from the body, limit the body size to 10kb
 app.use(express.json({ limit: '10kb' }));
+app.use(cookieParser())
 
 //Data sanitization against noSQL query injection
 app.use(sanitizer());
@@ -66,21 +69,12 @@ app.use(
   })
 );
 
-// app.get('/', (req, res) => {
-//   res.status(200).render('base');
-// });
+app.use((req, res, next) => {
+  res.requestTime = new Date().toISOString();
+  console.log(req.cookies)
+  next();
+});
 
-// app.get('/overview', (req, res) => {
-//   res.status(200).render('overview', {
-//     title: 'All Tours',
-//   });
-// });
-
-// app.get('/tour', (req, res) => {
-//   res.status(200).render('tour', {
-//     title: 'The Forest Hiker Tour',
-//   });
-// });
 app.use('/', viewRouter);
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
