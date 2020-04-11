@@ -5,7 +5,6 @@ const AppErrors = require('../utils/AppErrors');
 const { catchAsync } = require('../utils/CatchAsync');
 const sendEmail = require('../utils/Email');
 
-
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
@@ -43,17 +42,8 @@ exports.signUp = catchAsync(async (req, res, next) => {
     role: req.body.role,
     active: req.body.active,
   });
-
-  //   const token = signToken(newUser._id);
-  //   const user = await User.findById(newUser._id);
   createSendToken(newUser, 201, res);
-  //   res.status(201).json({
-  //     status: 'success',
-  //     token,
-  //     data: {
-  //       user,
-  //     },
-  //   });
+
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -74,27 +64,38 @@ exports.login = catchAsync(async (req, res, next) => {
   
 });
 
+exports.logout = (req, res) => {
+  res.cookie('jwt', 'logged out', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true
+  });
+  res.status(200).json({
+    status: 'success'
+  })
+}
+
 //User logging check - only for rendered pages, no errors
-exports.isLoggedIn = catchAsync(async (req, res, next) => {
+exports.isLoggedIn = async (req, res, next) => {
   // Get the token and check if its there
   if (req.cookies.jwt) {
-    const decoded = await jwt.verify(req.cookies.jwt, process.env.JWT_SECRET);
-
-    //check if user still exists
-    const currentUser = await User.findById(decoded.id);
-    if (!currentUser) {
+    try {
+      const decoded = await jwt.verify(req.cookies.jwt, process.env.JWT_SECRET);
+      //check if user still exists
+      const currentUser = await User.findById(decoded.id);
+      if (!currentUser) {
+        return next();
+      }
+      if (currentUser.checkPasswordChange(decoded.iat)) {
+        return next();
+      }
+      res.locals.user = currentUser;
       return next();
+    } catch (err) {
+      return next()
     }
-
-    if (currentUser.checkPasswordChange(decoded.iat)) {
-      return next();
-    }
-
-    res.locals.user = currentUser;
-    return next();
   }
   next();
-});
+};
 
 
 //Protect routes
