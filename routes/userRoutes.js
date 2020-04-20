@@ -6,6 +6,8 @@ const {
   patchSingleUser,
   deleteSingleUser,
   readMe,
+  userPhoto,
+  resizePhoto,
   updateMe,
   deleteMe,
 } = require('../controllers/userControllers');
@@ -19,19 +21,18 @@ const {
   resetPassword,
   updatePassword,
 } = require('../controllers/authControllers');
-
 const router = express.Router();
 
 router.post('/signup', signUp);
 router.post('/login', login);
-router.get('/logout', logout)
+router.get('/logout', logout);
 router.post('/forgotPassword', forgotPassword);
 router.patch('/resetpassword/:token', resetPassword);
 
 router.use(protect); //adding this protect here will protect all routes under this point
 router.delete('/deleteMe', deleteMe);
 router.get('/me', readMe, getSingleUser);
-router.patch('/updateMe', updateMe);
+router.patch('/updateMe', userPhoto, resizePhoto, updateMe);
 router.patch('/updatepassword', updatePassword);
 
 router.use(restrictTo('admin'));

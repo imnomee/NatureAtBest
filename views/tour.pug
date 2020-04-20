@@ -5,7 +5,7 @@ include reviewCard
 block append head
     script(src='https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js')
     link(href='https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css' rel='stylesheet')
-    
+
 block content
     section.section-header
         .header__hero
@@ -14,7 +14,7 @@ block content
         .heading-box
             h1.heading-primary
                 span= tour.name
-            .heading-box__group
+                .heading-box__group
                 .heading-box__detail
                     svg.heading-box__icon
                         use(xlink:href='/img/icons.svg#icon-clock')
@@ -70,5 +70,9 @@ block content
             .cta__content
                 h2.heading-secondary What are you waiting for?
                 p.cta__text= `${tour.duration} days. 1 adventure. Infinite memories. Make it yours today!`
-                button.btn.btn--green.span-all-rows Book tour now!
+                
+                if user 
+                    button.btn.btn--green.span-all-rows#book-tour(data-tour-id=`${tour.id}`) Book tour now!
+                else
+                    a(href='/login').btn.btn--green.span-all-rows Login to Book now!
     

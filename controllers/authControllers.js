@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const User = require('../models/userModel');
 const AppErrors = require('../utils/AppErrors');
 const { catchAsync } = require('../utils/CatchAsync');
-const sendEmail = require('../utils/Email');
+const Email = require('../utils/Email');
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -42,12 +42,14 @@ exports.signUp = catchAsync(async (req, res, next) => {
     role: req.body.role,
     active: req.body.active,
   });
+  const url = `${req.protocol}://${req.get('host')}/me`;
+  console.log(url);
+  await new Email(newUser, url).sendWelcome();
   createSendToken(newUser, 201, res);
-
 });
 
 exports.login = catchAsync(async (req, res, next) => {
-  const { email,password } = req.body;
+  const { email, password } = req.body;
   //if emailand password correct
 
   if (!email || !password) {
@@ -61,18 +63,17 @@ exports.login = catchAsync(async (req, res, next) => {
   }
   //send token
   createSendToken(user, 200, res);
-  
 });
 
 exports.logout = (req, res) => {
   res.cookie('jwt', 'logged out', {
     expires: new Date(Date.now() + 10 * 1000),
-    httpOnly: true
+    httpOnly: true,
   });
   res.status(200).json({
-    status: 'success'
-  })
-}
+    status: 'success',
+  });
+};
 
 //User logging check - only for rendered pages, no errors
 exports.isLoggedIn = async (req, res, next) => {
@@ -91,12 +92,11 @@ exports.isLoggedIn = async (req, res, next) => {
       res.locals.user = currentUser;
       return next();
     } catch (err) {
-      return next()
+      return next();
     }
   }
   next();
 };
-
 
 //Protect routes
 exports.protect = catchAsync(async (req, res, next) => {
@@ -106,7 +106,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   if (authorization && authorization.startsWith('Bearer')) {
     token = authorization.split(' ')[1];
   } else if (req.cookies.jwt) {
-    token = req.cookies.jwt
+    token = req.cookies.jwt;
   }
   // console.log('token', token);
 
@@ -140,6 +140,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   //Grant access to protected route
   req.user = currentUser;
+  res.locals.user = currentUser;
   next();
 });
 
@@ -165,19 +166,19 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   const resetToken = await user.createPasswordResetToken();
   await user.save({ validateBeforeSave: false });
 
-  //send it to user's email
-  const resetURL = `${req.protocol}://${req.get(
-    'host'
-  )}/api/v1/resetpassword/${resetToken}`;
-  const message = `Forgot your password? submit a Patch request with your new password#
-  and password confirm to: ${resetURL}`;
-
   try {
-    await sendEmail({
-      email: user.email,
-      subject: 'Your Password Reset Token valid for 10 Min',
-      message,
-    });
+    //send it to user's email
+    const resetURL = `${req.protocol}://${req.get(
+      'host'
+    )}/api/v1/users/resetpassword/${resetToken}`;
+    // const message = `Forgot your password? submit a Patch request with your new password#
+    // and password confirm to: ${resetURL}`;
+    // await sendEmail({
+    //   email: user.email,
+    //   subject: 'Your Password Reset Token valid for 10 Min',
+    //   message,
+    // });
+    await new Email(user, resetURL).sendPassReset();
 
     res.status(200).json({
       status: 'success',

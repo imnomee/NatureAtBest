@@ -1,8 +1,7 @@
 const path = require('path');
 const express = require('express'); //require express
-
 const morgan = require('morgan');
-const cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const sanitizer = require('express-mongo-sanitize');
@@ -15,10 +14,10 @@ const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
 const viewRouter = require('./routes/viewRoutes');
+const bookingRouter = require('./routes/bookingRoutes');
 
 //Middlwares
 const app = express(); //create app from express
-
 
 //pug settings
 app.set('view engine', 'pug');
@@ -47,7 +46,8 @@ app.use('/api', limiter);
 
 //body parser, reading data from the body, limit the body size to 10kb
 app.use(express.json({ limit: '10kb' }));
-app.use(cookieParser())
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use(cookieParser());
 
 //Data sanitization against noSQL query injection
 app.use(sanitizer());
@@ -71,7 +71,7 @@ app.use(
 
 app.use((req, res, next) => {
   res.requestTime = new Date().toISOString();
-  console.log(req.cookies)
+  // console.log(req.cookies);
   next();
 });
 
@@ -79,6 +79,7 @@ app.use('/', viewRouter);
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
+app.use('/api/v1/bookings', bookingRouter);
 
 ///If not routes match
 app.all('*', (req, res, next) => {

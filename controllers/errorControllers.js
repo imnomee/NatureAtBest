@@ -1,17 +1,24 @@
-/* eslint-disable node/no-unsupported-features/es-syntax */
+/* eslint-disable */
 
 const AppErrors = require('../utils/AppErrors');
 
-const devError = (err, res) => {
-  res.status(err.statusCode).json({
-    status: err.status,
-    message: err.message,
-    stack: err.stack,
-    error: err,
-  });
+const devError = (err, req, res) => {
+  if (req.originalUrl.startsWith('/api')) {
+    res.status(err.statusCode).json({
+      status: err.status,
+      message: err.message,
+      stack: err.stack,
+      error: err,
+    });
+  } else {
+    res.status(404).render('error', {
+      title: 'Something went wrong',
+      msg: err.message,
+    });
+  }
 };
 
-const prodError = (err, res) => {
+const prodError = (err, req, res) => {
   if (err.isOperational) {
     res.status(err.statusCode).json({
       status: err.status,
@@ -51,7 +58,7 @@ module.exports.globalErrorHandler = (err, req, res, next) => {
   err.status = err.status || 'error';
 
   if (process.env.NODE_ENV === 'development') {
-    devError(err, res);
+    devError(err, req, res);
   } else if (process.env.NODE_ENV === 'production') {
     let error = { ...err };
 
@@ -71,6 +78,6 @@ module.exports.globalErrorHandler = (err, req, res, next) => {
     if (error.name === 'JsonWebTokenError') {
       error = handleJWTError(error);
     }
-    prodError(error, res);
+    prodError(error, req, res);
   }
 };
